@@ -13,6 +13,10 @@
 </p>
 
 <p align="center">
+| <a href="https://arxiv.org/abs/2510.05632"><b>WaferAI-SIM 论文</b></a> |
+</p> 
+
+<p align="center">
 <a href="README.md">English</a> | <strong>中文</strong>
 </p>
 
