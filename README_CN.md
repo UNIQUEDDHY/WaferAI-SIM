@@ -47,7 +47,7 @@
 
 **GUI 可视化界面**:
 
-[gui-video.mp4](gui-video.mp4)
+[gui-video.mp4](gui_video.mp4)
 
 ---
 
