@@ -45,9 +45,9 @@
 
 ## 🎬 Demo
 
-**GUI Visualization**:
+**GUI Visualization** (LLM serving under PD-fusion mode, with TP = 4 and PP = 7):
 
-[ghttps://github.com/user-attachments/assets/3dbd655b-eb18-4130-894a-06fa1356b5d1](https://github.com/user-attachments/assets/3dbd655b-eb18-4130-894a-06fa1356b5d1)
+[https://github.com/user-attachments/assets/d94b7e84-baa7-4c73-a5d7-03b88ec4670e](https://github.com/user-attachments/assets/d94b7e84-baa7-4c73-a5d7-03b88ec4670e)
 
 ---
 

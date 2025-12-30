@@ -21,7 +21,7 @@ let nextY = 0;        // 下一个可用的 Y 位置
 const threadHeight = 20;
 
 let transform = { x: 0, y: 0, k: 1 }; // pan/zoom state
-let xaltscale = 1; // Alt+wheel time scaling
+let timeDomain = [0, 1]; // [t0, t1] in nanoseconds — 替代 xaltscale
 
 // Offscreen canvas for track labels
 let trackLabelCanvas = document.createElement("canvas");
@@ -37,18 +37,42 @@ let autoReloadTimer = null;
 // Input Handling
 // ======================
 
-canvas.addEventListener("wheel", function(event) {
+canvas.addEventListener("wheel", function (event) {
   if (event.altKey) {
     event.preventDefault();
-    const scaleFactor = event.deltaY > 0 ? 0.5 : 2;
-    xaltscale *= scaleFactor;
-    xaltscale = Math.max(0.01, Math.min(100, xaltscale));
-    xaltscale = Number(xaltscale.toFixed(1));
+
+    // 获取当前鼠标位置对应的时间
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = event.clientX - rect.left - margin.left;
+    const xScaleZoom = d3.zoomIdentity.translate(transform.x, 0).scale(transform.k).rescaleX(xScale);
+    const timeAtMouse = xScaleZoom.invert(mouseX);
+
+    // 缩放因子：向上滚（deltaY < 0）是放大
+    const factor = event.deltaY > 0 ? 2.0 : 0.5; // 放大：缩小时间窗口
+
+    const domainWidth = timeDomain[1] - timeDomain[0];
+    const newDomainWidth = domainWidth * factor;
+
+    // 可选：限制最小时间窗口（防止数值不稳定）
+    // 如果你想支持更高倍率，可将 0.01 改为 0.001 或更小
+    if (newDomainWidth < 0.01) {
+      // 不允许再放大（可选）
+      // return;
+    }
+
+    // 以鼠标位置为中心缩放
+    const ratio = (timeAtMouse - timeDomain[0]) / domainWidth;
+    const newT0 = timeAtMouse - ratio * newDomainWidth;
+    const newT1 = timeAtMouse + (1 - ratio) * newDomainWidth;
+
+    timeDomain = [newT0, newT1];
     render();
   } else if (event.ctrlKey) {
+    // 原有水平缩放（实际无效，因为时间轴由 timeDomain 控制）
+    // 保留但可忽略
     event.preventDefault();
     const scaleFactor = event.deltaY > 0 ? 0.95 : 1.05;
-    const newK = Math.max(0.1, Math.min(10, transform.k * scaleFactor));
+    const newK = Math.max(1, Math.min(10, transform.k * scaleFactor));
 
     const rect = canvas.getBoundingClientRect();
     const mouseX = event.clientX - rect.left - margin.left;
@@ -59,6 +83,7 @@ canvas.addEventListener("wheel", function(event) {
     transform = { x: newX, y: transform.y, k: newK };
     render();
   } else {
+    // 垂直平移（滚动）
     event.preventDefault();
     const dy = -event.deltaY * 0.4;
     transform = { x: transform.x, y: transform.y + dy, k: transform.k };
@@ -66,7 +91,7 @@ canvas.addEventListener("wheel", function(event) {
   }
 });
 
-// Drag to pan
+// Drag to pan (horizontal/vertical)
 let isDragging = false;
 let lastX, lastY;
 
@@ -217,11 +242,16 @@ function render() {
     return;
   }
 
-  // Update x domain
-  const allTs = intervals.flatMap(e => [e.ts, e.ts + (e.dur || 0)]);
-  const minTs = Math.min(...allTs);
-  const maxTs = Math.max(...allTs);
-  xScale.domain([minTs, maxTs * xaltscale || minTs + 1]);
+  // 初始化 timeDomain（仅首次或清空后）
+  if (timeDomain[0] === 0 && timeDomain[1] === 1) {
+    const allTs = intervals.flatMap(e => [e.ts, e.ts + (e.dur || 0)]);
+    const minTs = Math.min(...allTs);
+    const maxTs = Math.max(...allTs);
+    timeDomain = [minTs, maxTs || minTs + 1];
+  }
+
+  // 设置 X 轴时间范围
+  xScale.domain(timeDomain);
 
   const xScaleZoom = d3.zoomIdentity.translate(transform.x, 0).scale(transform.k).rescaleX(xScale);
 
@@ -237,7 +267,7 @@ function render() {
   for (const iv of intervals) {
     if (!trackY.hasOwnProperty(iv.trackLabel)) continue;
     const x = xScaleZoom(iv.ts);
-    const w = Math.max(1, xScaleZoom(iv.ts + iv.dur) - x);
+    const w = Math.max(1, xScaleZoom(iv.ts + iv.dur) - x); // 至少 1 像素
     const y = trackY[iv.trackLabel] - transform.y;
     if (y + threadHeight < -10 || y > height + 10) continue; // cull
 
@@ -298,36 +328,41 @@ function render() {
 }
 
 function drawTrackLabels() {
-  // 确保离屏 canvas 覆盖整个可视高度
   trackLabelCanvas.width = margin.left;
-  trackLabelCanvas.height = canvasHeight; // 关键：必须和主 canvas 高度一致
+  trackLabelCanvas.height = canvasHeight;
   trackLabelCtx.clearRect(0, 0, margin.left, canvasHeight);
 
-  // 使用更醒目的颜色（白色带一点发光感）
-  trackLabelCtx.fillStyle = "#e0e0ff"; // 浅青白，适配深色主题
+  trackLabelCtx.fillStyle = "#e0e0ff";
   trackLabelCtx.font = "12px 'Roboto Mono', monospace";
-  trackLabelCtx.textAlign = "right";   // 改为 right 更安全
+  trackLabelCtx.textAlign = "right";
   trackLabelCtx.textBaseline = "middle";
 
   for (const [label, y] of Object.entries(trackY)) {
-    // 计算在可视区域内的 Y 位置（考虑 pan/zoom 的 y 偏移）
     const drawY = margin.top + y - transform.y;
-
-    // 只绘制在可视区域内的标签（加一点缓冲）
     if (drawY + threadHeight > 0 && drawY - threadHeight < canvasHeight) {
       trackLabelCtx.fillText(label, margin.left - 12, drawY + threadHeight / 2);
     }
   }
 
-  // 将离屏 canvas 绘制到主 canvas 左侧
   ctx.drawImage(trackLabelCanvas, 0, 0);
 }
+
+// 自动选择合适格式：ns, ps, fs
+function formatTime(t) {
+  if (Math.abs(t) >= 1e3) return d3.format(".3s")(t) + "ns";
+  if (Math.abs(t) >= 1) return d3.format(".3f")(t) + "ns";
+  if (Math.abs(t) >= 1e-3) return d3.format(".3f")(t * 1e3) + "ps";
+  if (Math.abs(t) >= 1e-6) return d3.format(".3f")(t * 1e6) + "fs";
+  return d3.format(".3e")(t) + "s";
+}
+
+
 
 function drawXAxis(xScaleZoom) {
   ctx.save();
   ctx.translate(margin.left, margin.top + height);
   ctx.fillStyle = "#e0e0ff";
- ctx.strokeStyle = "#a0a0ff";
+  ctx.strokeStyle = "#a0a0ff";
   ctx.font = "12px sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
@@ -339,8 +374,8 @@ function drawXAxis(xScaleZoom) {
     ctx.beginPath();
     ctx.moveTo(x, 0);
     ctx.lineTo(x, 5);
-    ctx.stroke();
-    ctx.fillText(d3.format(".3f")(t), x, 8);
+    ctx.stroke();// 然后
+    ctx.fillText(formatTime(t), x, 8);
   }
   ctx.restore();
 }
@@ -362,6 +397,7 @@ socket.on("init_events", (data) => {
   globalStack = {};
   trackY = {};
   nextY = 0;
+  timeDomain = [0, 1]; // 重置时间域
 
   events = data;
   filteredEvents = [...events];
@@ -385,6 +421,7 @@ socket.on("clear_events", () => {
   globalStack = {};
   trackY = {};
   nextY = 0;
+  timeDomain = [0, 1];
   document.getElementById("searchInput").value = "";
   render();
 });
@@ -403,7 +440,6 @@ function filterEvents() {
   } else {
     filteredEvents = events.filter(e => e.name && e.name.toLowerCase().includes(query));
   }
-  // Rebuild intervals from filtered events
   intervals = [];
   flows = {};
   globalStack = {};
@@ -412,8 +448,15 @@ function filterEvents() {
 }
 
 function resetZoom() {
-  xaltscale = 1;
   transform = { x: 0, y: 0, k: 1 };
+  if (intervals.length > 0) {
+    const allTs = intervals.flatMap(e => [e.ts, e.ts + (e.dur || 0)]);
+    const minTs = Math.min(...allTs);
+    const maxTs = Math.max(...allTs);
+    timeDomain = [minTs, maxTs || minTs + 1];
+  } else {
+    timeDomain = [0, 1];
+  }
   render();
 }
 
@@ -441,20 +484,20 @@ function runSimulation() {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ workload_config: configFile, hardware_config: coreConfigFile })
   })
-  .then(res => res.json())
-  .then(data => {
-    if (data.error) {
-      statusDiv.textContent = "❌ Error: " + data.error;
+    .then(res => res.json())
+    .then(data => {
+      if (data.error) {
+        statusDiv.textContent = "❌ Error: " + data.error;
+        statusDiv.style.color = "#dc3545";
+      } else {
+        statusDiv.textContent = "✅ Started (PID: " + data.pid + ")";
+        statusDiv.style.color = "#28a745";
+      }
+    })
+    .catch(err => {
+      statusDiv.textContent = "❌ Network error";
       statusDiv.style.color = "#dc3545";
-    } else {
-      statusDiv.textContent = "✅ Started (PID: " + data.pid + ")";
-      statusDiv.style.color = "#28a745";
-    }
-  })
-  .catch(err => {
-    statusDiv.textContent = "❌ Network error";
-    statusDiv.style.color = "#dc3545";
-  });
+    });
 }
 
 function clearTrace() {
@@ -482,17 +525,12 @@ function clearLog() {
   document.getElementById("logContent").innerHTML = "";
 }
 
-// 全局变量：当前是否隐藏日志
 let isLogHidden = false;
 
 function toggleLogVisibility() {
   isLogHidden = document.getElementById("hideLog").checked;
-  
-  // 隐藏/显示面板
   const logPanel = document.getElementById("logPanel");
   logPanel.style.display = isLogHidden ? "none" : "flex";
-  
-  // 发送状态到后端
   socket.emit("log_visibility", isLogHidden);
 }
 

@@ -45,9 +45,9 @@
 
 ## 🎬 演示
 
-**GUI 可视化界面**:
+**GUI 可视化界面** (PD 合并模式下的 LLM serving，其中 TP = 4，PP = 7):
 
-[https://github.com/user-attachments/assets/3dbd655b-eb18-4130-894a-06fa1356b5d1](https://github.com/user-attachments/assets/3dbd655b-eb18-4130-894a-06fa1356b5d1)
+[https://github.com/user-attachments/assets/d94b7e84-baa7-4c73-a5d7-03b88ec4670e](https://github.com/user-attachments/assets/d94b7e84-baa7-4c73-a5d7-03b88ec4670e)
 
 ---
 
