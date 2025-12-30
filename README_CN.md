@@ -47,7 +47,7 @@
 
 **GUI 可视化界面**:
 
-[gui-video.mp4](gui_video.mp4)
+[https://github.com/user-attachments/assets/3dbd655b-eb18-4130-894a-06fa1356b5d1](https://github.com/user-attachments/assets/3dbd655b-eb18-4130-894a-06fa1356b5d1)
 
 ---
 
