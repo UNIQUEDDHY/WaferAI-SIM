@@ -213,12 +213,13 @@ async def run_simulation(request: SimulationRequest):
     try:
         npusim_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "build", "npusim"))
         if not os.path.exists(npusim_path):
-            return {"error": f"npusim not found at {npusim_path}"}
+            return {"error": f"binary not found at {npusim_path}"}
 
         cmd = [
             npusim_path,
             "--workload-config", request.workload_config,
-            "--hardware-config", request.hardware_config
+            "--hardware-config", request.hardware_config,
+            "--simulation-config", "../llm/test/simulation_config/default_spec.json",
         ]
 
         # 启动子进程，捕获 stdout/stderr

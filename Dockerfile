@@ -33,7 +33,7 @@ ENV LD_LIBRARY_PATH=${SYSTEMC_HOME}/lib-linux64:$LD_LIBRARY_PATH
 ENV CPLUS_INCLUDE_PATH=${SYSTEMC_HOME}/include:$CPLUS_INCLUDE_PATH
 
 WORKDIR /workspace
-RUN git clone https://gh-proxy.com/github.com/doulujiyao12/npu-sim.git .
+RUN git clone https://github.com/IPADS-SAI/WaferAI-SIM .
 RUN mkdir build && cd build && \
     cmake .. -DSYSTEMC_HOME=${SYSTEMC_HOME} && cmake --build . -- -j$(nproc)
 

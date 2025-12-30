@@ -47,7 +47,7 @@
 
 **GUI Visualization**:
 
-https://github.com/user-attachments/assets/16d4f604-30a7-43bc-a2e8-a6a776718708
+[gui-video.mp4](gui-video.mp4)
 
 ---
 

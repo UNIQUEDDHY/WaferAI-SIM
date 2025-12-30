@@ -250,7 +250,7 @@
 </head>
 <body>
   <header>
-    <img src="/static/npusim.svg" alt="NPU Simulator Logo">
+    <img src="/static/logo.png" alt="NPU Simulator Logo">
     <h1>NPU TRACE VIEWER</h1>
   </header>
 
@@ -269,23 +269,18 @@
 
     <div class="sim-panel">
       <strong>RUN SIMULATION</strong>
-      <input type="text" id="configFile" list="configFileOptions" value="../llm/test/gpt2_small/original.json" />
+      <input type="text" id="configFile" list="configFileOptions" value="../llm/test/workload_config/paper/fig8/4B.json" />
       <datalist id="configFileOptions">
-        <option value="../llm/test/workload_config/gpt2_small/original.json">
-        <option value="../llm/test/workload_config/gpt2_small/original2.json">
-        <option value="../llm/test/workload_config/gpt2_small/original3.json">
-        <option value="../llm/test/workload_config/gpt2_small/original4.json">
-        <option value="../llm/test/chores/dataflow_tp.json">
-        <option value="../llm/test/chores/gpu_basic.json">
-        <option value="../llm/test/chores/pd_fuse.json">
-        <option value="../llm/test/chores/pd_split.json">   
-        <option value="../llm/test/workload_config/gpt2_small/pd_split/pd_split_49_14_100_100.json">
+        <option value="../llm/test/workload_config/paper/fig9/1.7B256K.json">
+        <option value="../llm/test/workload_config/paper/fig10/tp4/4Btp4.json">
+        <option value="../llm/test/workload_config/paper/fig11/L14_49.json">
+        <option value="../llm/test/workload_config/paper/fig12/L42_21.json">
+        <option value="../llm/test/workload_config/paper/fig16/Ltp1.json">
       </datalist>
-      <input type="text" id="coreConfigFile" list="HWConfigFileOptions" value="../llm/test/hardware_config/core_4x4.json" />
+      <input type="text" id="coreConfigFile" list="HWConfigFileOptions" value="../llm/test/hardware_config/default/A_178_27.json" />
       <datalist id="HWConfigFileOptions">
-        <option value="../llm/test/hardware_config/core_4x4.json">
-        <option value="../llm/test/chores/hw_config.json">
-        <option value="../llm/test/temp_config.json">
+        <option value="../llm/test/hardware_config/default/B_288_36.json">
+        <option value="../llm/test/hardware_config/default/C_576_36.json">
       </datalist>
       <button onclick="runSimulation()">▶️ Start</button>
       <div id="simStatus"></div>

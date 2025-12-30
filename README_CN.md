@@ -47,7 +47,7 @@
 
 **GUI 可视化界面**:
 
-[https://github.com/user-attachments/assets/16d4f604-30a7-43bc-a2e8-a6a776718708](https://github.com/user-attachments/assets/16d4f604-30a7-43bc-a2e8-a6a776718708)
+[gui-video.mp4](gui-video.mp4)
 
 ---
 
@@ -68,7 +68,7 @@ docker build -t waferai-sim:latest .
 启动交互式容器：
 
 ```bash
-docker run -it waferai-sim:latest
+docker run -it -p 8000:8000 waferai-sim:latest
 ```
 
 ### 3. 执行仿真
