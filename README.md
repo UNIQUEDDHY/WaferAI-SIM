@@ -9,7 +9,7 @@
 </h3>
 
 <p align="center">
-| <a href="[https://npu-sim.readthedocs.io/zh-cn/latest/](https://npu-sim.readthedocs.io/zh-cn/latest/)"><b>📖 Documentation</b></a> | <a href="[https://github.com/user-attachments/assets/16d4f604-30a7-43bc-a2e8-a6a776718708](https://github.com/user-attachments/assets/16d4f604-30a7-43bc-a2e8-a6a776718708)"><b>🎬 Demo Video</b></a> |
+| <a href="https://npu-sim.readthedocs.io/zh-cn/latest/"><b>📖 Documentation</b></a> | <a href="https://github.com/user-attachments/assets/d94b7e84-baa7-4c73-a5d7-03b88ec4670e"><b>🎬 Demo Video</b></a> |
 </p>
 
 <p align="center">
