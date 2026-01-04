@@ -19,7 +19,10 @@ RUN sed -i 's|archive.ubuntu.com|mirrors.tuna.tsinghua.edu.cn|g' /etc/apt/source
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
     g++ make unzip wget git libcairo2-dev libsfml-dev xorg \
+    python3 python3-pip python3-dev \
     software-properties-common gnupg ca-certificates
+RUN python3 -m pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir jupyterlab
 RUN wget https://gh-proxy.com/github.com/Kitware/CMake/releases/download/v3.31.3/cmake-3.31.3-linux-x86_64.sh -O /tmp/cmake.sh && \
     chmod +x /tmp/cmake.sh && \
     mkdir /opt/cmake && \
@@ -39,4 +42,5 @@ RUN mkdir build && cd build && \
 
 WORKDIR /workspace/build
 
-CMD ["bash"]
+EXPOSE 8888
+CMD ["jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root"]
