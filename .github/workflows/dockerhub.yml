@@ -26,4 +26,4 @@ jobs:
           context: .
           push: true
           platforms: linux/amd64
-          tags: ddhy001/waferai-sim:latest
+          tags: ddhy001/waferai-sim:raw
