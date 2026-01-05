@@ -19,7 +19,7 @@ RUN sed -i 's|archive.ubuntu.com|mirrors.tuna.tsinghua.edu.cn|g' /etc/apt/source
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
     g++ make unzip wget git libcairo2-dev libsfml-dev xorg \
-    python3 python3-pip python3-dev \
+    # python3 python3-pip python3-dev \
     software-properties-common gnupg ca-certificates
 RUN python3 -m pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir jupyterlab
@@ -40,7 +40,8 @@ RUN git clone https://github.com/IPADS-SAI/WaferAI-SIM .
 RUN mkdir build && cd build && \
     cmake .. -DSYSTEMC_HOME=${SYSTEMC_HOME} && cmake --build . -- -j$(nproc)
 
-WORKDIR /workspace
+WORKDIR /workspace/build
 
-EXPOSE 8888
-CMD ["jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root", "--notebook-dir=/workspace"]
+CMD ["bash"]
+# EXPOSE 8888
+# CMD ["jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root", "--notebook-dir=/workspace"]
